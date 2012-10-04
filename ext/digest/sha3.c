@@ -119,7 +119,7 @@ rb_sha3_singleton_digest(int argc, VALUE *argv, VALUE klass) {
 	}
 }
 
-void
+void __attribute__((visibility("default")))
 Init_sha3() {
 	mDigest = rb_define_module("Digest");
 	cSHA3 = rb_define_class_under(mDigest, "SHA3", rb_cObject);
