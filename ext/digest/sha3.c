@@ -11,19 +11,27 @@ typedef struct {
 } RbSHA3;
 
 static VALUE
-rb_sha3_new(VALUE klass, VALUE bitlen) {
+rb_sha3_new(int argc, VALUE *argv, VALUE klass) {
 	RbSHA3 *ctx;
 	VALUE obj;
+	VALUE hashlen;
+	int i_hashlen;
+
+	if (rb_scan_args(argc, argv, "01", &hashlen) == 0) {
+		i_hashlen = 512;
+	} else {
+		i_hashlen = NUM2INT(hashlen);
+	}
 
 	ctx = (RbSHA3 *) xmalloc(sizeof(RbSHA3));
 	obj = Data_Wrap_Struct(klass, 0, xfree, ctx);
-	ctx->bitlen = NUM2INT(bitlen);
+	ctx->bitlen = i_hashlen;
 
 	if (ctx->bitlen == 0) {
 		rb_raise(rb_eRuntimeError, "Unsupported hash length");
 	}
 
-	switch (Init(&ctx->state, ctx->bitlen)) {
+	switch (Init(&ctx->state, i_hashlen)) {
 	case SUCCESS:
 		return obj;
 	case FAIL:
@@ -115,7 +123,7 @@ void
 Init_sha3() {
 	mDigest = rb_define_module("Digest");
 	cSHA3 = rb_define_class_under(mDigest, "SHA3", rb_cObject);
-	rb_define_singleton_method(cSHA3, "new", rb_sha3_new, 1);
+	rb_define_singleton_method(cSHA3, "new", rb_sha3_new, -1);
 	rb_define_method(cSHA3, "initialize_copy",  rb_sha3_copy, 1);
 	rb_define_method(cSHA3, "reset",  rb_sha3_reset, 0);
 	rb_define_method(cSHA3, "update",  rb_sha3_update, 1);
