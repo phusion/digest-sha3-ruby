@@ -1,2 +1,2 @@
 require 'mkmf'
-create_makefile('sha3')
+create_makefile('digest/sha3')
