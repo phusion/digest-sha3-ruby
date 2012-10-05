@@ -11,9 +11,17 @@ typedef struct {
 } RbSHA3;
 
 static VALUE
-rb_sha3_new(int argc, VALUE *argv, VALUE klass) {
+rb_sha3_alloc(VALUE klass) {
 	RbSHA3 *ctx;
-	VALUE obj;
+	
+	ctx = (RbSHA3 *) xmalloc(sizeof(RbSHA3));
+	ctx->bitlen = -1;
+	return Data_Wrap_Struct(klass, 0, xfree, ctx);
+}
+
+static VALUE
+rb_sha3_initialize(int argc, VALUE *argv, VALUE self) {
+	RbSHA3 *ctx;
 	VALUE hashlen;
 	int i_hashlen;
 
@@ -22,18 +30,16 @@ rb_sha3_new(int argc, VALUE *argv, VALUE klass) {
 	} else {
 		i_hashlen = NUM2INT(hashlen);
 	}
-
-	ctx = (RbSHA3 *) xmalloc(sizeof(RbSHA3));
-	obj = Data_Wrap_Struct(klass, 0, xfree, ctx);
-	ctx->bitlen = i_hashlen;
-
-	if (ctx->bitlen == 0) {
+	if (i_hashlen == 0) {
 		rb_raise(rb_eRuntimeError, "Unsupported hash length");
 	}
 
+	Data_Get_Struct(self, RbSHA3, ctx);
+	ctx->bitlen = i_hashlen;
+
 	switch (Init(&ctx->state, i_hashlen)) {
 	case SUCCESS:
-		return obj;
+		return self;
 	case FAIL:
 		rb_raise(rb_eRuntimeError, "Unknown error");
 		return Qnil;
@@ -47,19 +53,15 @@ rb_sha3_new(int argc, VALUE *argv, VALUE klass) {
 }
 
 static VALUE
-rb_sha3_copy(VALUE copy, VALUE obj) {
-	RbSHA3 *ctx_copy, *ctx_obj;
+rb_sha3_initialize_copy(VALUE self, VALUE other) {
+	RbSHA3 *ctx_self, *ctx_other;
 
-	Data_Get_Struct(copy, RbSHA3, ctx_copy);
-	Data_Get_Struct(obj, RbSHA3, ctx_obj);
-	if (copy == obj) {
-		return copy;
-	}
-	rb_check_frozen(copy);
-
-	memcpy(&ctx_copy->state, &ctx_obj->state, sizeof(hashState));
-	ctx_copy->bitlen = ctx_obj->bitlen;
-	return copy;
+	rb_check_frozen(self);
+	Data_Get_Struct(self, RbSHA3, ctx_self);
+	Data_Get_Struct(other, RbSHA3, ctx_other);
+	memcpy(&ctx_self->state, &ctx_other->state, sizeof(hashState));
+	ctx_self->bitlen = ctx_other->bitlen;
+	return self;
 }
 
 static VALUE
@@ -123,8 +125,9 @@ void __attribute__((visibility("default")))
 Init_sha3() {
 	mDigest = rb_define_module("Digest");
 	cSHA3 = rb_define_class_under(mDigest, "SHA3", rb_cObject);
-	rb_define_singleton_method(cSHA3, "new", rb_sha3_new, -1);
-	rb_define_method(cSHA3, "initialize_copy",  rb_sha3_copy, 1);
+	rb_define_alloc_func(cSHA3, rb_sha3_alloc);
+	rb_define_method(cSHA3, "initialize", rb_sha3_initialize, -1);
+	rb_define_method(cSHA3, "initialize_copy",  rb_sha3_initialize_copy, 1);
 	rb_define_method(cSHA3, "reset",  rb_sha3_reset, 0);
 	rb_define_method(cSHA3, "update",  rb_sha3_update, 1);
 	rb_define_method(cSHA3, "<<",  rb_sha3_update, 1);

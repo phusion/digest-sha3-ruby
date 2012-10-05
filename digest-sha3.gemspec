@@ -13,6 +13,7 @@ Gem::Specification.new do |s|
   s.files = Dir[
     "README.md",
     "LICENSE",
+    "Makefile",
     "digest-sha3.gemspec",
     "ext/**/*.{c,h,rb}",
     "lib/**/*"
