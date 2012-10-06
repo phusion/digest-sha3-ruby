@@ -38,3 +38,7 @@ Run the test suite as follows:
     make test
 
 A part of the test suite is automatically generated from Keccak's reference test suite.
+
+## Warning
+
+Do not use SHA-3 for hashing passwords. Do not even use SHA-3 + salt for hashing passowords. Use a [slow hash](http://codahale.com/how-to-safely-store-a-password/) instead.
