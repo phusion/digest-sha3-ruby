@@ -7,7 +7,7 @@ Gem::Specification.new do |s|
   s.email = "hongli@phusion.nl"
   s.homepage = "https://github.com/phusion/digest-sha3-ruby"
   s.description = "The SHA-3 (Keccak) hash."
-  s.authors = ["Hongli Lai", "Keccak authors"]
+  s.authors = ["Hongli Lai (Phusion)", "Keccak authors"]
   s.extensions << "ext/digest/extconf.rb"
 
   s.files = Dir[
