@@ -4,7 +4,7 @@ Gem::Specification.new do |s|
   s.name = "digest-sha3"
   s.version = Digest::SHA3::Version::STRING
   s.summary = "The SHA-3 (Keccak) hash"
-  s.email = "hongli@phusion.nl"
+  s.email = "software-signing@phusion.nl"
   s.homepage = "https://github.com/phusion/digest-sha3-ruby"
   s.description = "The SHA-3 (Keccak) hash."
   s.authors = ["Hongli Lai (Phusion)", "Keccak authors"]
