@@ -30,7 +30,7 @@ sha3_init(hashState *ctx, size_t bitlen) {
 	case FAIL:
 		rb_raise(rb_eRuntimeError, "Unknown error");
 	case BAD_HASHLEN:
-		rb_raise(rb_eRuntimeError, "Bad hash length (must be 0, 224, 256, 384 or 512)");
+		rb_raise(rb_eArgError, "Bad hash length (must be 0, 224, 256, 384 or 512)");
 	default:
 		rb_raise(rb_eRuntimeError, "Unknown error code");
 	}
@@ -68,7 +68,7 @@ rb_sha3_initialize(int argc, VALUE *argv, VALUE self) {
 	}
 	switch (i_hashlen) {
 	case 0:
-		rb_raise(rb_eRuntimeError, "Unsupported hash length");
+		rb_raise(rb_eArgError, "Unsupported hash length");
 	case DEFAULT_DIGEST_LEN:
 		break;
 	default:
