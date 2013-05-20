@@ -7,7 +7,7 @@ ext/digest/Makefile: ext/digest/extconf.rb
 	cd ext/digest && ruby extconf.rb
 
 clean:
-	if [[ -f ext/digest/Makefile ]]; then make -C ext/digest clean; fi
+	if [ -f ext/digest/Makefile ]; then make -C ext/digest clean; fi
 	rm -f ext/digest/Makefile
 	rm -f test/test_vectors.rb
 
