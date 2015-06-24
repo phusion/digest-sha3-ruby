@@ -10,10 +10,6 @@ This Ruby extension implements the SHA-3 ([Keccak](http://keccak.noekeon.org/)) 
 
 **Note**: as of version 1.1.0, digest-sha3 requires Ruby 2.2. The last version that worked on older versions was 1.1.0.
 
-Our gem is signed using PGP with the [Phusion Software Signing key](http://www.phusion.nl/about/gpg). That key in turn is signed by [the rubygems-openpgp Certificate Authority](http://www.rubygems-openpgp-ca.org/).
-
-You can verify the authenticity of the gem by following [The Complete Guide to Verifying Gems with rubygems-openpgp](http://www.rubygems-openpgp-ca.org/blog/the-complete-guide-to-verifying-gems-with-rubygems-openpgp.html).
-
 ## Usage
 
 Keccak supports 5 hash lengths: 224-bit, 256-bit, 384-bit, 512-bit and variable length. Variable length is not supported by this Ruby extension. Unless the user specifies otherwise, this Ruby extension assumes 512-bit.
