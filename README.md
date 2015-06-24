@@ -8,7 +8,7 @@ This Ruby extension implements the SHA-3 ([Keccak](http://keccak.noekeon.org/)) 
 
     gem install digest-sha3
 
-**Note**: as of version 1.1.0, digest-sha3 requires Ruby 2.2. The last version that worked on older versions was 1.1.0.
+**Note**: as of version 1.1.0, digest-sha3 requires Ruby 2.2. The last version that worked on older versions was 1.0.2.
 
 ## Usage
 
