@@ -14,5 +14,5 @@ clean:
 test: all test/test_vectors.rb
 	ruby test/test_all.rb
 
-test/test_vectors.rb: test/generate_tests.rb test/data/*
+test/test_vectors.rb: test/generate_tests.rb
 	ruby test/generate_tests.rb > test/test_vectors.rb
