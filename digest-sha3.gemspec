@@ -9,7 +9,7 @@ Gem::Specification.new do |s|
   s.description = "The SHA-3 (Keccak) hash."
   s.authors = ["Hongli Lai (Phusion)", "Keccak authors"]
   s.extensions << "ext/digest/extconf.rb"
-  s.required_ruby_version = "~> 2.2"
+  s.required_ruby_version = ">= 2.2"
   s.license = "MIT"
 
   s.files = Dir[
