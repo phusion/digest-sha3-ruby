@@ -4,14 +4,14 @@
 #else
 #include "digest.h"
 #endif
-#include "KeccakNISTInterface.h"
+#include "sha3impl.h"
 
 #define MAX_DIGEST_SIZE 64
 #define DEFAULT_DIGEST_LEN 512
 
-static int sha3_init_func(hashState *ctx);
-static void sha3_update_func(hashState *ctx, unsigned char *str, size_t len);
-static int sha3_finish_func(hashState *ctx, unsigned char *digest);
+static int sha3_init_func(sha3_ctx *ctx);
+static void sha3_update_func(sha3_ctx *ctx, unsigned char *str, size_t len);
+static int sha3_finish_func(sha3_ctx *ctx, unsigned char *digest);
 
 /*
   Metadata definition for the SHA3 algorithm.
@@ -21,8 +21,8 @@ static int sha3_finish_func(hashState *ctx, unsigned char *digest);
 static rb_digest_metadata_t sha3 = {
 	RUBY_DIGEST_API_VERSION,
 	DEFAULT_DIGEST_LEN,
-	KeccakPermutationSize - (2 * DEFAULT_DIGEST_LEN), //size of blocks
-	sizeof(hashState), //size of context for the object we'll be passed in below functions.
+	SHA3_STATE_BITS - (2 * DEFAULT_DIGEST_LEN), //size of blocks
+	sizeof(sha3_ctx), //size of context for the object we'll be passed in below functions.
 	(rb_digest_hash_init_func_t)sha3_init_func,
 	(rb_digest_hash_update_func_t)sha3_update_func,
 	(rb_digest_hash_finish_func_t)sha3_finish_func,
@@ -33,7 +33,7 @@ static rb_digest_metadata_t sha3 = {
    we override initialize to do custom hash size, so we don't care too much here.
 */
 static int
-sha3_init_func(hashState *ctx) {
+sha3_init_func(sha3_ctx *ctx) {
   // Just return a 1 ' successful' we override the init function
   // so this is not necessary
   // the base class alloc calls this to initialize the algorithm
@@ -42,14 +42,14 @@ sha3_init_func(hashState *ctx) {
 
 /* Update function, take the current context and add str to it */
 static void
-sha3_update_func(hashState *ctx, unsigned char *str, size_t len) {
-	Update(ctx, str, len * 8);
+sha3_update_func(sha3_ctx *ctx, unsigned char *str, size_t len) {
+	FIPS202_SHA3_Update(ctx, str, len);
 }
 
 /* Finish the hash calculation and return the finished string */
 static int
-sha3_finish_func(hashState *ctx, unsigned char *digest) {
-	Final(ctx, digest);
+sha3_finish_func(sha3_ctx *ctx, unsigned char *digest) {
+	FIPS202_SHA3_Final(ctx, digest, FIPS202_SHA3_HashSize(ctx));
 	return 1;
 }
 
@@ -59,11 +59,11 @@ sha3_finish_func(hashState *ctx, unsigned char *digest) {
  */
 static VALUE
 rb_sha3_finish(VALUE self) {
-  hashState *ctx;
+  sha3_ctx *ctx;
   VALUE digest;
 
-  ctx = (hashState *)RTYPEDDATA_DATA(self);
-  digest = rb_str_new(0, ctx->capacity / 2 / 8);
+  ctx = (sha3_ctx *)RTYPEDDATA_DATA(self);
+  digest = rb_str_new(0, FIPS202_SHA3_HashSize(ctx));
   sha3_finish_func(ctx, (unsigned char *)RSTRING_PTR(digest));
 
   return digest;
@@ -73,13 +73,11 @@ rb_sha3_finish(VALUE self) {
  * initialize the ctx with the bitlength
  */
 static void
-sha3_init(hashState *ctx, size_t bitlen) {
-	switch (Init(ctx, bitlen)) {
-	case SUCCESS:
+sha3_init(sha3_ctx *ctx, size_t bitlen) {
+	switch (FIPS202_SHA3_Init(ctx, bitlen)) {
+	case SHA3_OK:
 		return;
-	case FAIL:
-		rb_raise(rb_eRuntimeError, "Unknown error");
-	case BAD_HASHLEN:
+	case SHA3_ERR:
 		rb_raise(rb_eArgError, "Bad hash length (must be 0, 224, 256, 384 or 512)");
 	default:
 		rb_raise(rb_eRuntimeError, "Unknown error code");
@@ -92,7 +90,7 @@ sha3_init(hashState *ctx, size_t bitlen) {
  */
 static VALUE
 rb_sha3_initialize(int argc, VALUE *argv, VALUE self) {
-	hashState *ctx;
+	sha3_ctx *ctx;
 	VALUE hashlen;
 	int i_hashlen;
 
@@ -105,7 +103,7 @@ rb_sha3_initialize(int argc, VALUE *argv, VALUE self) {
 		rb_raise(rb_eArgError, "Unsupported hash length");
   }
 
-  ctx = (hashState *)RTYPEDDATA_DATA(self);
+  ctx = (sha3_ctx *)RTYPEDDATA_DATA(self);
 	sha3_init(ctx, i_hashlen);
 
 	return rb_call_super(0, NULL);
@@ -116,10 +114,10 @@ rb_sha3_initialize(int argc, VALUE *argv, VALUE self) {
  */
 static VALUE
 rb_sha3_digest_length(VALUE self) {
-	hashState *ctx;
+	sha3_ctx *ctx;
 
-	ctx = (hashState *)RTYPEDDATA_DATA(self);
-	return INT2FIX(ctx->capacity / 2 / 8);
+	ctx = (sha3_ctx *)RTYPEDDATA_DATA(self);
+	return INT2FIX(FIPS202_SHA3_HashSize(ctx));
 }
 
 /* Ruby method.  Digest::SHA3#block_length
@@ -127,10 +125,10 @@ rb_sha3_digest_length(VALUE self) {
  */
 static VALUE
 rb_sha3_block_length(VALUE self) {
-	hashState *ctx;
+	sha3_ctx *ctx;
 
-	ctx = (hashState *)RTYPEDDATA_DATA(self);
-	return INT2FIX(ctx->rate / 8);
+	ctx = (sha3_ctx *)RTYPEDDATA_DATA(self);
+	return INT2FIX(FIPS202_SHA3_BlockSize(ctx));
 }
 
 void __attribute__((visibility("default")))

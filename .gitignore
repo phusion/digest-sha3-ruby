@@ -1,5 +1,9 @@
 *.DS_Store
 *.o
+*.so
+*.dll
+*.lib
+*.dylib
 *.bundle
 Makefile
-test/test_vectors.rb
+/ext/digest/mkmf.log
